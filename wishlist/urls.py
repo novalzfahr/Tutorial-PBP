@@ -7,6 +7,7 @@ from wishlist.views import show_xml_by_id
 from wishlist.views import register
 from wishlist.views import login_user
 from wishlist.views import logout_user
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 app_name = 'wishlist'
 
@@ -20,3 +21,4 @@ urlpatterns = [
     path('login/', login_user, name='login'),
     path('logout/', logout_user, name='logout'),
 ]
+urlpatterns += staticfiles_urlpatterns()
