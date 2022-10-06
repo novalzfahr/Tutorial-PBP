@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
+from wishlist.forms import wishlistForm
 from wishlist.models import BarangWishlist
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -12,6 +13,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 ...
 # Create your views here.'
@@ -24,6 +26,43 @@ def show_wishlist(request):
     'last_login': request.COOKIES['last_login'],
     }
     return render(request, "wishlist.html", context)
+
+@login_required(login_url='/wishlist/login/')
+def show_wishlist_ajax(request):
+    context = {
+    'nama': 'Achmad Noval Fahrezi',
+    'last_login': request.COOKIES['last_login'],
+    }
+    return render(request, "wishlist_AJAX.html", context)
+
+# @csrf_exempt
+@login_required(login_url="/wishlist/login/")
+def add_wishlist(request):
+    if request.method == "POST":
+        nama_barang = request.POST.get("nama_barang")
+        harga_barang = request.POST.get("harga_barang")
+        deskripsi = request.POST.get("deskripsi")
+        BarangWishlist.objects.create(
+            nama_barang=nama_barang, harga_barang=harga_barang, deskripsi=deskripsi
+        )
+        JsonResponse({}, status=200)
+    return redirect("wishlist:show_wishlist_ajax")
+
+
+def login_user(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            response = HttpResponseRedirect(reverse("wishlist:show_wishlist")) 
+            response.set_cookie('last_login', str(datetime.datetime.now())) 
+            return response
+        else:
+            messages.info(request, 'Username atau Password salah!')
+    context = {}
+    return render(request, 'login.html', context)
 
 def show_xml(request):
     data = BarangWishlist.objects.all()
@@ -50,24 +89,8 @@ def register(request):
             form.save()
             messages.success(request, 'Akun telah berhasil dibuat!')
             return redirect('wishlist:login')
-    
     context = {'form':form}
     return render(request, 'register.html', context)
-
-def login_user(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            response = HttpResponseRedirect(reverse("wishlist:show_wishlist")) 
-            response.set_cookie('last_login', str(datetime.datetime.now())) 
-            return response
-        else:
-            messages.info(request, 'Username atau Password salah!')
-    context = {}
-    return render(request, 'login.html', context)
 
 def logout_user(request):
     logout(request)

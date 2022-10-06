@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+<script>
+    $(document).ready(function(){
+        $.get("{% url 'wishlist:show_json' %}", function(data){
+            $.each(data, function(index,value){
+                $("#wishlist").append(
+                    "<tr><td>" + value.fields.nama_barang + "</td><td>" + value.fields.harga_barang + "</td><td>" + value.fields.deskripsi + "</td></tr>"
+                )
+            })
+        })
+    })
+
+    $("#wishlist_form").submit(function (e) {
+    e.preventDefault();
+    var nama_barang = $("#nama_barang").val();
+    var harga_barang = parseInt($("#harga_barang").val());
+    var deskripsi = $("#deskripsi").val();
+    $.ajax({
+    type: "POST",
+    url: "{% url 'wishlist:add_wishlist' %}",
+    data: {
+        nama_barang: nama_barang,
+        harga_barang: harga_barang,
+        deskripsi: deskripsi,
+    },
+    success: function (response) {
+        $("#table-wishlist").append(
+            "<tr><td>" +
+            nama_barang +
+            "</td><td>" +
+            harga_barang +
+            "</td><td>" +
+            deskripsi +
+            "</td></tr>"
+        );
+    },
+    error: function (error) {
+        console.log(error);
+    },
+    });
+});
+</script>
+
+
+<nav class="navbar" style="background-color: #20c997">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Nama: {{nama}}</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'wishlist:logout' %}">Log Out</a>
+            </li>
+          </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="my-auto w-100 mt-3">
+    <div class="d-flex gap-3 mb-3">
+      <h5>Nama:</h5>
+      <span class="badge bg-secondary"><h6>{{nama}}</h6></span>
+    </div>
+</div>
+
+<div class="container-fluid d-flex justify-content-center item-align-center gap-5">
+    <div class="my-auto mx-auto">
+      <h3>Add Wishlist</h3>
+      <form method="post" id="wishlist_form">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="nama_barang" class="form-label">Nama Barang</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Masukkan nama barang"
+            name="nama_barang"
+            id="nama_barang"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="harga_barang" class="form-label">Harga Barang</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Masukkan harga barang"
+            name="harga_barang"
+            id="harga_barang"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="deskripsi" class="form-label">Deskripsi</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Masukkan deskripsi barang"
+            name="deskripsi"
+            id="deskripsi"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary mb-3">Submit</button>
+      </form>
+    </div>
+</div>
+
+<table class="table table-success table-striped-columns mb-3" id="wishlist">
+    <tr>
+        <th scope="col" >Nama Barang</th>
+        <th scope="col" >Harga Barang</th>
+        <th scope="col" >Deskripsi</th>
+    </tr>
+</table>
+
+<div class="d-flex justify-content-center">
+    <h5>Sesi terakhir login: {{ last_login }}</h5>
+</div>
+
+{% endblock content %}
